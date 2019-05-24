@@ -1,16 +1,22 @@
 """Flask-приложение по предсказанию класса изображения с помощью нейросети"""
 import io
 import logging
+import os
+from pathlib import Path
 
 import flask
 from PIL import Image
+from dotenv import load_dotenv
 from flask import Flask
 
 from mobilenetv2predictor import MobileNetV2Predictor
 
+# Инициализируем переменные среды из .env-файла:
+load_dotenv(Path('.') / '.env.docker')
+
 # Инициализируем приложение Flask.
 app = Flask(__name__)
-model_filename = '../keras_models/mobilenetv2_84percent.h5'
+model_filename = '../keras_models/' + os.getenv("NEURAL_NETWORK_MODEL_FILE")
 
 
 def load_model():

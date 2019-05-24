@@ -1,0 +1,6 @@
+*
+!bot-download
+!bot-upload
+!public/
+!temp/
+!.gitignore

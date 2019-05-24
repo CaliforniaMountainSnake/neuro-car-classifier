@@ -34,6 +34,8 @@ services:
             dockerfile: ./.docker_build_configs/phpfpm/Dockerfile
             args:
                 CONTAINER_TIMEZONE_PHPFPM: ${CONTAINER_TIMEZONE_PHPFPM}
+                SSL_LOCAL_CRT_FILE: ${SSL_LOCAL_CRT_FILE}
+                SSL_PHPFPM_CRT_FILE: ${SSL_PHPFPM_CRT_FILE}
         volumes:
             # Mount the app folder, including not accessible from web files:
             - ./www:/var/www/:Z
@@ -97,6 +99,8 @@ services:
             - ./www-flask/:/var/www/:Z
             # Mount logs:
             - ./logs/python:/var/log/:Z
+            # Mount the docker .env file:
+            - ./.env:/var/www/app/.env.docker:Z
 
 volumes:
     persistent:

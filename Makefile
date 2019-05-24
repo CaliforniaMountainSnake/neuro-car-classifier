@@ -14,6 +14,22 @@ down: ## Stop all containers
 
 restart: down up ## Restart all started containers
 
+install: ## Execute install script
+	docker exec ${CONTAINER_NAME_PHPFPM} /bin/sh -c "cd /var/www/ && chmod +x first_install.sh && ./first_install.sh"
+
+reinstall: restart install ## Restart containers and execute install script
+
+reinstall-full: down clear-mysql up install ## Delete MySQL database, restart containers and execute install script
+
+set-webhook-good: ## Set webhook with a good SSL certificate
+	curl -s -k https://${NGINX_SERVER_NAME}/api/telegram/setWebhook?secret_admin_password=${SECRET_ADMIN_PASSWORD}
+
+set-webhook-self: ## Set webhook with a self-signed SSL certificate
+	curl -s -F "url=https://${NGINX_SERVER_NAME}/api/telegram/webhook" -F "certificate=@${SSL_LOCAL_CA_FILE}" https://api.telegram.org/bot${TELEGRAMBOT_BOT_TOKEN}/setWebhook | json_pp
+
+webhook-info: ## Get webhook info
+	curl -s https://api.telegram.org/bot${TELEGRAMBOT_BOT_TOKEN}/getWebhookInfo | json_pp
+
 it-nginx: ## Get into the Nginx container terminal
 	docker exec -it ${CONTAINER_NAME_NGINX} bash
 
@@ -35,8 +51,19 @@ it-python: ## Get into the Python container terminal
 chown-logs: ## Set needed access rights to the logs directory
 	chown -R 999:999 logs/
 
-example-in-container: ## Example shows how you can run any command inside any contaier
-	docker exec ${CONTAINER_NAME_PHPFPM} /bin/sh -c "cd /var/www/ && php --version"
+composer-dump: ## Composer dump-autoload
+	docker exec ${CONTAINER_NAME_PHPFPM} /bin/sh -c "composer dump-autoload"
+
+composer-update: ## Composer update
+	docker exec ${CONTAINER_NAME_PHPFPM} /bin/sh -c "composer update"
+
+composer-install: ## Composer install
+	docker exec ${CONTAINER_NAME_PHPFPM} /bin/sh -c "composer install"
 
 clear-mysql: down ## Clear all files inside the mysql directory.
 	rm -r mysql_files/*
+
+git-pull: ## Clean temporary changes and git pull from origin
+	git checkout . && git clean -d -f && git pull
+
+update: down git-pull up install ## Install a new update from remote git
