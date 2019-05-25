@@ -15,5 +15,8 @@ RUN ln -snf /usr/share/zoneinfo/$CONTAINER_TIMEZONE_PYTHON /etc/localtime && ech
 ADD ./.docker_build_configs/python/requirements.txt /var/requirements.txt
 RUN pip install -r /var/requirements.txt
 
+# Install dependencies:
+RUN apt-get install -y libglib2.0-0 libsm6 libxext6 libxrender-dev
+
 WORKDIR /var/www/app
 CMD python flask_app.py

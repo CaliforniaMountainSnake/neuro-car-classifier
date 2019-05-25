@@ -1,3 +1,6 @@
+import functools
+
+import keras
 from keras.applications.mobilenet_v2 import preprocess_input
 from keras.models import load_model
 
@@ -8,8 +11,21 @@ class MobileNetV2Predictor(BasePredictor):
     """Предсказатель класса изображения нейросети MobileNetV2, хранящейся в файле"""
 
     def __init__(self, model_filename: str):
-        super().__init__(load_model(model_filename), preprocess_input, 224, 224, self.__get_labels())
+        super().__init__(load_model(model_filename, custom_objects={'top5_acc': self.__get_top_5_metric()}),
+                         preprocess_input, 224, 224, self.__get_labels())
         return
+
+    @staticmethod
+    def get_last_conv_layer_name() -> str:
+        """Получить имя последнего сверточного слоя для данной нейросети"""
+        return 'Conv_1_bn'
+
+    @staticmethod
+    def __get_top_5_metric():
+        """Метрика для получения топ-5 точности"""
+        top5_acc = functools.partial(keras.metrics.top_k_categorical_accuracy, k=5)
+        top5_acc.__name__ = 'top5_acc'
+        return top5_acc
 
     @staticmethod
     def __get_labels():

@@ -4,6 +4,7 @@ import logging
 import os
 from pathlib import Path
 
+import PIL
 import flask
 from PIL import Image
 from dotenv import load_dotenv
@@ -47,13 +48,25 @@ def predict():
         return flask.jsonify(
             {'error': 400, 'description': 'Вы не задали файл изображения в параметре "' + image_key + '"'}), 400
 
-    # Read the image in the PIL format
+    # Получим изображение из запроса:
     image = flask.request.files[image_key].read()
-    pil_image = Image.open(io.BytesIO(image))
 
-    predictions = predictor.predict(predictor.preprocess_pil_image(pil_image))
+    # Конвертируем изображение в формат PIL:
+    original_pil_image: PIL.Image.Image = Image.open(io.BytesIO(image))
+    preprocessed_pil_image = predictor.preprocess_pil_image(original_pil_image)
+
+    # Выполняем предсказание:
+    predictions = predictor.predict(preprocessed_pil_image)
     decoded_predictions = predictor.decode_predictions(predictions=predictions, top=5)
+    print('decoded_predictions: ', decoded_predictions)
 
+    # Получаем тепловую карту:
+    # predictor.get_heat_map(last_conv_layer_name=predictor.get_last_conv_layer_name(),
+    #                        original_pil_image=original_pil_image,
+    #                        preprocessed_pil_image=preprocessed_pil_image,
+    #                        result_heat_map_filename='heat_map.jpg')
+
+    # Формируем выходной json-массив:
     result['predictions'] = []
     for (class_id, label, probability) in decoded_predictions[0]:
         row = {"class_id": class_id, "label": label, "probability": float(probability)}
