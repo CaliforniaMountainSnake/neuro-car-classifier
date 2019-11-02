@@ -2,7 +2,7 @@ flask==1.0.2
 keras==2.2.4
 # Starting with TensorFlow 1.6, binaries use AVX instructions which may not run on older CPUs
 tensorflow==1.5
-pillow==6.0.0
+pillow==6.2.0
 python-dotenv==0.10.2
 opencv-python==4.1.0.25
 matplotlib==3.0.3
